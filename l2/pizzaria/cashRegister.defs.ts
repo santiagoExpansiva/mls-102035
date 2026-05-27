@@ -95,13 +95,35 @@ export const definitionPage = {
                     "paramName": "data",
                     "type": "date",
                     "source": {
-                      "from": "context",
-                      "contextKey": "actualDate"
+                      "from": "state",
+                      "stateKey": "ui.cashRegister.day"
                     }
                   }
                 ]
               },
-              "tempStates": [],
+              "tempStates": [
+                {
+                  "stateKey": "ui.cashRegisterStatus.showDetails",
+                  "type": "boolean",
+                  "description": "Alterna visualização de detalhes do status do caixa.",
+                  "priority": "optional",
+                  "initialValue": "true"
+                },
+                {
+                  "stateKey": "ui.cashRegisterStatus.showTotals",
+                  "type": "boolean",
+                  "description": "Exibe ou oculta totais do dia no cabeçalho.",
+                  "priority": "optional",
+                  "initialValue": "true"
+                },
+                {
+                  "stateKey": "ui.cashRegisterStatus.highlightChanges",
+                  "type": "boolean",
+                  "description": "Realça alterações recentes nos valores do caixa.",
+                  "priority": "optional",
+                  "initialValue": "true"
+                }
+              ],
               "computedFields": [
                 {
                   "fieldId": "saldoAtual",
@@ -130,14 +152,35 @@ export const definitionPage = {
                   ],
                   "description": "Totaliza entradas manuais registradas no dia.",
                   "priority": "optional"
+                },
+                {
+                  "fieldId": "statusLabel",
+                  "derivedFrom": [
+                    "db.caixaDia.status"
+                  ],
+                  "description": "Rótulo amigável do status do caixa (aberto/fechado).",
+                  "priority": "optional"
+                },
+                {
+                  "fieldId": "diaLabel",
+                  "derivedFrom": [
+                    "db.caixaDia.data"
+                  ],
+                  "description": "Rótulo de data para exibição no resumo do caixa.",
+                  "priority": "optional"
                 }
               ],
               "navigationFields": [],
               "emits": [
                 {
                   "event": "refreshCaixaStatus",
-                  "payload": "{data: context.actualDate}",
+                  "payload": "{data: ui.cashRegister.day}",
                   "writesState": "db.caixaDia"
+                },
+                {
+                  "event": "toggleAutoRefresh",
+                  "payload": "{autoRefresh: ui.cashRegister.autoRefresh}",
+                  "writesState": "ui.cashRegister.autoRefresh"
                 }
               ]
             },
@@ -187,7 +230,8 @@ export const definitionPage = {
                     "entityField": "observacao",
                     "stateKey": "db.movimentoCaixa.observacao",
                     "priority": "optional",
-                    "usage": "edit"
+                    "usage": "edit",
+                    "priorityReason": "Justificativa breve quando necessário."
                   }
                 ]
               },
@@ -219,6 +263,34 @@ export const definitionPage = {
                   "description": "Observação opcional para sangria.",
                   "priority": "optional",
                   "initialValue": "''"
+                },
+                {
+                  "stateKey": "ui.cashRegister.valorInputValido",
+                  "type": "boolean",
+                  "description": "Flag de validação para valores monetários positivos.",
+                  "priority": "recommended",
+                  "initialValue": "false"
+                },
+                {
+                  "stateKey": "ui.cashRegister.showConfirmationModal",
+                  "type": "boolean",
+                  "description": "Controle de modal de confirmação de operação.",
+                  "priority": "optional",
+                  "initialValue": "false"
+                },
+                {
+                  "stateKey": "ui.cashRegister.lastOperationType",
+                  "type": "string",
+                  "description": "Último tipo de operação executada com sucesso.",
+                  "priority": "optional",
+                  "initialValue": "''"
+                },
+                {
+                  "stateKey": "ui.cashRegister.preventDoubleSubmit",
+                  "type": "boolean",
+                  "description": "Evita envio duplicado enquanto há operação em andamento.",
+                  "priority": "recommended",
+                  "initialValue": "true"
                 }
               ],
               "computedFields": [
@@ -245,13 +317,41 @@ export const definitionPage = {
                   ],
                   "description": "Permite fechamento somente com caixa aberto.",
                   "priority": "required"
+                },
+                {
+                  "fieldId": "valorOperacaoValido",
+                  "derivedFrom": [
+                    "db.caixa.valorAbertura",
+                    "db.caixa.valorFechamento",
+                    "db.movimentoCaixa.valor",
+                    "ui.cashRegister.operationMode"
+                  ],
+                  "description": "Indica se o valor informado está válido para o modo selecionado.",
+                  "priority": "recommended"
+                },
+                {
+                  "fieldId": "operacaoLabel",
+                  "derivedFrom": [
+                    "ui.cashRegister.operationMode"
+                  ],
+                  "description": "Rótulo amigável do modo de operação selecionado.",
+                  "priority": "optional"
+                },
+                {
+                  "fieldId": "habilitarConfirmacao",
+                  "derivedFrom": [
+                    "ui.cashRegister.valorInputValido",
+                    "ui.cashRegister.operationMode"
+                  ],
+                  "description": "Habilita botão de confirmação somente quando há valor válido e modo definido.",
+                  "priority": "recommended"
                 }
               ],
               "navigationFields": [],
               "emits": [
                 {
                   "event": "abrirCaixa",
-                  "payload": "{data: context.actualDate, valorAbertura: db.caixa.valorAbertura}",
+                  "payload": "{data: ui.cashRegister.day, valorAbertura: db.caixa.valorAbertura}",
                   "writesState": "ui.cashRegister.openState"
                 },
                 {
@@ -263,6 +363,11 @@ export const definitionPage = {
                   "event": "fecharCaixa",
                   "payload": "{caixaId: db.caixaDia.id, valorFechamento: db.caixa.valorFechamento}",
                   "writesState": "ui.cashRegister.closeState"
+                },
+                {
+                  "event": "resetOperationForm",
+                  "payload": "{}",
+                  "writesState": "db.movimentoCaixa"
                 }
               ]
             },
@@ -310,8 +415,8 @@ export const definitionPage = {
                     "paramName": "data",
                     "type": "date",
                     "source": {
-                      "from": "context",
-                      "contextKey": "actualDate"
+                      "from": "state",
+                      "stateKey": "ui.cashRegister.day"
                     }
                   }
                 ],
@@ -324,6 +429,27 @@ export const definitionPage = {
                   "description": "Filtrar operações por tipo.",
                   "priority": "optional",
                   "initialValue": "'todos'"
+                },
+                {
+                  "stateKey": "ui.cashRegisterHistory.sortBy",
+                  "type": "string",
+                  "description": "Campo de ordenação da lista de operações.",
+                  "priority": "optional",
+                  "initialValue": "'dataHora'"
+                },
+                {
+                  "stateKey": "ui.cashRegisterHistory.showObservacoes",
+                  "type": "boolean",
+                  "description": "Exibir ou ocultar coluna de observações.",
+                  "priority": "optional",
+                  "initialValue": "true"
+                },
+                {
+                  "stateKey": "ui.cashRegisterHistory.compactView",
+                  "type": "boolean",
+                  "description": "Exibir lista em modo compacto para uso no balcão.",
+                  "priority": "optional",
+                  "initialValue": "false"
                 }
               ],
               "computedFields": [
@@ -334,13 +460,39 @@ export const definitionPage = {
                   ],
                   "description": "Quantidade total de operações no dia.",
                   "priority": "optional"
+                },
+                {
+                  "fieldId": "totalPorTipo",
+                  "derivedFrom": [
+                    "db.movimentosCaixaDia[].tipo",
+                    "db.movimentosCaixaDia[].valor"
+                  ],
+                  "description": "Totais agrupados por tipo (entrada/sangria).",
+                  "priority": "optional"
+                },
+                {
+                  "fieldId": "saldoMovimentado",
+                  "derivedFrom": [
+                    "db.movimentosCaixaDia[].tipo",
+                    "db.movimentosCaixaDia[].valor"
+                  ],
+                  "description": "Saldo líquido das movimentações do dia.",
+                  "priority": "optional"
+                },
+                {
+                  "fieldId": "ultimaOperacaoLabel",
+                  "derivedFrom": [
+                    "db.movimentosCaixaDia[].dataHora"
+                  ],
+                  "description": "Data/hora amigável da última operação registrada.",
+                  "priority": "optional"
                 }
               ],
               "navigationFields": [],
               "emits": [
                 {
                   "event": "refreshMovimentos",
-                  "payload": "{data: context.actualDate}",
+                  "payload": "{data: ui.cashRegister.day}",
                   "writesState": "db.movimentosCaixaDia[]"
                 }
               ]
@@ -388,6 +540,16 @@ export const definitionPage = {
             "success",
             "error"
           ]
+        },
+        {
+          "stateKey": "ui.cashRegister.refreshState",
+          "description": "Estado de atualização manual dos dados do caixa.",
+          "values": [
+            "idle",
+            "loading",
+            "success",
+            "error"
+          ]
         }
       ],
       "tempStates": [
@@ -397,6 +559,27 @@ export const definitionPage = {
           "description": "Dia selecionado para visualização do caixa.",
           "priority": "recommended",
           "initialValue": "context.actualDate"
+        },
+        {
+          "stateKey": "ui.cashRegister.autoRefresh",
+          "type": "boolean",
+          "description": "Atualização automática dos dados do caixa.",
+          "priority": "optional",
+          "initialValue": "true"
+        },
+        {
+          "stateKey": "ui.cashRegister.autoRefreshInterval",
+          "type": "number",
+          "description": "Intervalo em segundos para atualização automática quando ativa.",
+          "priority": "optional",
+          "initialValue": "60"
+        },
+        {
+          "stateKey": "ui.cashRegister.preferredCurrency",
+          "type": "string",
+          "description": "Moeda padrão de exibição para valores do caixa.",
+          "priority": "optional",
+          "initialValue": "'BRL'"
         }
       ]
     }
@@ -444,11 +627,11 @@ export const materializeIndex = [
   {
     "id": "contract",
     "specVar": "contractSpec",
-    "outputPath": "/l1/pizzaria/layer_2_controllers/cashRegister.ts",
+    "outputPath": "_102035_/l1/pizzaria/layer_2_controllers/cashRegister.ts",
     "skillPath": "_102020_/l2/agents/newModule/skills/genContract.ts",
     "agent": "agentMaterializeContract",
     "dependsOn": [],
-    "specUpdatedAt": "2026-05-27T18:48:53Z"
+    "specUpdatedAt": "2026-05-27T19:33:43Z"
   },
   {
     "id": "shared",
@@ -458,7 +641,7 @@ export const materializeIndex = [
     "dependsOn": [
       "contract"
     ],
-    "specUpdatedAt": "2026-05-27T18:48:53Z"
+    "specUpdatedAt": "2026-05-27T19:33:43Z"
   },
   {
     "id": "desktop",
@@ -469,6 +652,6 @@ export const materializeIndex = [
       "contract",
       "shared"
     ],
-    "specUpdatedAt": "2026-05-27T18:48:53Z"
+    "specUpdatedAt": "2026-05-27T19:33:43Z"
   }
 ]

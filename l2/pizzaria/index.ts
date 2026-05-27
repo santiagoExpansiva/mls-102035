@@ -8,6 +8,14 @@ void bootstrapCollabApp({
   shellMode: 'spa',
   navigation: [
     { label: 'Monitor', href: '/monitor' },
+    { label: 'cashRegister', href: '/pizzaria/cashRegister' },
   ],
-  pages: [],
+  pages: [
+    {
+      path: '/pizzaria/cashRegister',
+      title: 'cashRegister',
+      tagName: 'pizzaria--web--desktop--page11--cash-register-102035',
+      loader: () => import('/_102035_/l2/pizzaria/web/desktop/page11/cashRegister.js'),
+    },
+  ],
 });
