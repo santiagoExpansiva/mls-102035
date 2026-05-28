@@ -12,7 +12,7 @@ async function getVeiculoRepository(ctx: RequestContext) {
 export async function listVeiculos(ctx: RequestContext, input?: { status?: string }): Promise<LocadoraVeiculoResponse[]> {
   const repo = await getVeiculoRepository(ctx);
   const rows = await repo.findMany();
-  if (input?.status !== undefined) {
+  if (input?.status !== '') {
     return rows.filter((item: LocadoraVeiculoResponse) => item.status === input.status);
   }
   return rows;
@@ -21,6 +21,6 @@ export async function listVeiculos(ctx: RequestContext, input?: { status?: strin
 export const veiculosListaListVeiculosHandler: BffHandler = async ({ request, ctx }) => {
   const params = (request.params ?? {}) as Record<string, unknown>;
   return ok(await listVeiculos(ctx, {
-    status: typeof params.status === 'string' ? params.status : undefined
+    status: typeof params.status === 'string' ? params.status : ''
   }));
 };

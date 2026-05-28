@@ -3,8 +3,8 @@ export const USE_MOCK = true;
 
 const mockStore = {
   locadoraVeiculo: [
-    { placa: 'AAA1', modelo: 'modeloA', ano: 2025, categoria: 'compacto ', status: 'disponível', quilometragem: 100000 },
-    { placa: 'BBB2', modelo: 'modeloB', ano: 2025, categoria: 'trilha', status: 'locado', quilometragem: 20000 },
+    { placa: 'AAA1', modelo: 'Fiat Argo', ano: 2025, categoria: 'Hatch ', status: 'disponível', quilometragem: 100000 },
+    { placa: 'BBB2', modelo: 'Chevrolet Onix', ano: 2025, categoria: 'Sedan', status: 'disponível', quilometragem: 20000 },
   ] as any[],
   locadoraCliente: [
     { nome: 'Alberto', cpf: '99999999999', cnh: '99999999', telefone: '(99)9999-999', email: 'emaila@gmail.com' },

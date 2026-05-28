@@ -132,9 +132,9 @@ export const definitionPage = {
               "navigationFields": [],
               "emits": [
                 {
-                  "event": "veiculosCadastroForm.submit",
+                  "event": "locadora.veiculosCadastro.saveVeiculo",
                   "payload": "{placa,modelo,ano,categoria,status,quilometragem}",
-                  "writesState": "ui.veiculosCadastro.saveStatus"
+                  "writesState": "ui.veiculosCadastro.saveVeiculo"
                 }
               ]
             },
@@ -150,7 +150,7 @@ export const definitionPage = {
               "dataShape": {
                 "shape": "object",
                 "stateKey": "config.locadora.statusVeiculoOptions",
-                "sourceRoutine": "locadora.getStatusVeiculoOptions",
+                "sourceRoutine": "locadora.veiculosCadastro.getStatusVeiculoOptions",
                 "fields": [
                   {
                     "entity": "veiculo",
@@ -172,7 +172,7 @@ export const definitionPage = {
       ],
       "actionStates": [
         {
-          "stateKey": "ui.veiculosCadastro.saveStatus",
+          "stateKey": "ui.veiculosCadastro.saveVeiculo",
           "description": "Estado da ação de salvar o cadastro de veículo.",
           "values": [
             "idle",

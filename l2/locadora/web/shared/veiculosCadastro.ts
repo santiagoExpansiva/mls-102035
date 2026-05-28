@@ -117,26 +117,10 @@ export class LocadoraVeiculosCadastroBase extends CollabLitElement {
     async loadGetStatusVeiculoOptions(_params?: undefined, options?: BffClientOptions): Promise<void> {
         this.status = this.msg.loadingStatusVeiculoOptions;
 
-        if ((window as any).mls) {
-            this.statusVeiculoOptions = ['disponivel', 'locado', 'manutencao'];
-            this.status = '';
-            return;
-        } else {
-            const response = await execBff<string[]>('locadora.getStatusVeiculoOptions', _params, options);
-            if (!response.ok || !response.data) {
-                if (options?.mode === 'blocking') {
-                    throw (response.error ?? {
-                        code: 'UNEXPECTED_ERROR',
-                        message: this.msg.couldNotLoad,
-                    }) satisfies AuraNormalizedError;
-                }
-                this.status = this.msg.couldNotLoad;
-                this.statusVeiculoOptions = [];
-                return;
-            }
-            this.statusVeiculoOptions = response.data ?? [];
-            this.status = '';
-        }
+        this.statusVeiculoOptions = ['disponivel', 'locado', 'manutencao'];
+        this.status = '';
+        return;
+
     }
 
     // ── action methods (one per write routine) ──
@@ -144,12 +128,12 @@ export class LocadoraVeiculosCadastroBase extends CollabLitElement {
         const options: BffClientOptions | undefined = signal ? { mode: 'blocking', signal } : { mode: 'blocking' };
 
         if ((window as any).mls) {
-            console.log('[mls mock] locadora.updateVeiculo', params);
+            console.log('[mls mock] locadora.veiculosCadastro.saveVeiculo', params);
             this.status = this.msg.savedSuccessfully;
             return;
         }
 
-        const response = await execBff<unknown>('locadora.updateVeiculo', params, options);
+        const response = await execBff<unknown>('locadora.veiculosCadastro.saveVeiculo', params, options);
         if (!response.ok) {
             throw (response.error ?? {
                 code: 'UNEXPECTED_ERROR',

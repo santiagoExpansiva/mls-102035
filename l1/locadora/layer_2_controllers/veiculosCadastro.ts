@@ -15,10 +15,20 @@ export async function getStatusVeiculoOptions(ctx: RequestContext, input?: {}): 
   return rows;
 }
 
-export async function saveStatus(ctx: RequestContext, input: LocadoraUpdateVeiculoRequest): Promise<LocadoraVeiculoResponse> {
+export async function saveVeiculo(ctx: RequestContext, input: LocadoraUpdateVeiculoRequest): Promise<LocadoraVeiculoResponse> {
   const repo = await getVeiculoRepository(ctx);
   const existing = await repo.findOne({ where: { placa: input.placa } });
-  if (!existing) throw new AppError('NOT_FOUND', 'Veiculo not found', 404);
+  if (!existing) {
+    repo.upsert({ record: { ...input, modelo: input.modelo ?? '', ano: input.ano ?? 0, categoria: input.categoria ?? '', status: input.status ?? 'disponível', quilometragem: input.quilometragem ?? 0 } });
+    return {
+      placa: input.placa,
+      modelo: input.modelo ?? '',
+      ano: input.ano ?? 0,
+      categoria: input.categoria ?? '',
+      status: input.status ?? 'disponível',
+      quilometragem: input.quilometragem ?? 0
+    };
+  }
   const merged: LocadoraVeiculoResponse = {
     ...existing,
     placa: input.placa,
@@ -54,9 +64,9 @@ export const veiculosCadastroGetStatusVeiculoOptionsHandler: BffHandler = async 
   return ok(await getStatusVeiculoOptions(ctx, {}));
 };
 
-export const veiculosCadastroSaveStatusHandler: BffHandler = async ({ request, ctx }) => {
+export const veiculosCadastroSaveHandler: BffHandler = async ({ request, ctx }) => {
   const params = (request.params ?? {}) as Record<string, unknown>;
-  return ok(await saveStatus(ctx, {
+  return ok(await saveVeiculo(ctx, {
     placa: typeof params.placa === 'string' ? params.placa : undefined,
     modelo: typeof params.modelo === 'string' ? params.modelo : undefined,
     ano: typeof params.ano === 'number' ? params.ano : undefined,

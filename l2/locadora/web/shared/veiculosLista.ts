@@ -10,6 +10,7 @@ import {
     runBlockingUiAction,
 } from '/_102029_/l2/interactionRuntime.js';
 import type { LocadoraVeiculoResponse } from '/_102035_/l2/locadora/web/contracts/veiculosLista.js';
+import { ParameterizedStatement$ } from '@aws-sdk/client-dynamodb';
 
 /// **collab_i18n_start**
 const message_pt = {
@@ -119,6 +120,7 @@ export class LocadoraVeiculosListaBase extends CollabLitElement {
                 },
             ];
 
+
             const statusParam = (params?.status ?? 'todos') as string;
             this.veiculo = statusParam && statusParam !== 'todos'
                 ? mocked.filter((v) => v.status === statusParam)
@@ -126,9 +128,12 @@ export class LocadoraVeiculosListaBase extends CollabLitElement {
             this.status = `${this.veiculo.length} ${this.msg.itemsAvailable}`;
             return;
         }
-
+        if((params ?? {}).status === 'todos') {
+            params.status = '';
+        }
+        
         const response = await execBff<LocadoraVeiculoResponse[]>(
-            'locadora.listVeiculos',
+            'locadora.veiculosLista.listVeiculos',
             params ?? {},
             options,
         );
@@ -154,7 +159,7 @@ export class LocadoraVeiculosListaBase extends CollabLitElement {
     // (no form actions defined for this page)
 
     protected handleReloadClick(): void {
-        const params = { status: 'todos' };
+        const params = { status: '' };
         void runBlockingUiAction(
             async (signal: AbortSignal) => {
                 await this.loadListVeiculos(params, { mode: 'blocking', signal });

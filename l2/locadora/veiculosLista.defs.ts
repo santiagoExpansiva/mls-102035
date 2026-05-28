@@ -111,7 +111,7 @@ export const definitionPage = {
               "dataShape": {
                 "shape": "collection",
                 "stateKey": "db.veiculo[]",
-                "sourceRoutine": "locadora.listVeiculos",
+                "sourceRoutine": "locadora.veiculosLista.listVeiculos",
                 "itemFields": [
                   {
                     "entity": "veiculo",
