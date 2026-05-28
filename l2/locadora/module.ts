@@ -32,7 +32,33 @@ export const moduleFrontendDefinition: AuraModuleFrontendDefinition = {
   pageTitle: 'locadora',
   device: 'desktop',
   navigation: [
+    {
+      id: 'veiculosCadastro',
+      label: 'veiculosCadastro',
+      href: '/locadora/veiculosCadastro',
+      description: 'veiculosCadastro',
+    },
+    {
+      id: 'veiculosLista',
+      label: 'veiculosLista',
+      href: '/locadora/veiculosLista',
+      description: 'veiculosLista',
+    },
   ],
   routes: [
+    {
+      path: '/locadora/veiculosCadastro',
+      aliases: [],
+      entrypoint: '/_102035_/l2/locadora/web/desktop/page11/veiculosCadastro.js',
+      tag: 'locadora--web--desktop--page11--veiculos-cadastro-102035',
+      title: 'veiculosCadastro',
+    },
+    {
+      path: '/locadora/veiculosLista',
+      aliases: [],
+      entrypoint: '/_102035_/l2/locadora/web/desktop/page11/veiculosLista.js',
+      tag: 'locadora--web--desktop--page11--veiculos-lista-102035',
+      title: 'veiculosLista',
+    },
   ],
 };

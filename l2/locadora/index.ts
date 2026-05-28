@@ -8,6 +8,21 @@ void bootstrapCollabApp({
   shellMode: 'spa',
   navigation: [
     { label: 'Monitor', href: '/monitor' },
+    { label: 'veiculosCadastro', href: '/locadora/veiculosCadastro' },
+    { label: 'veiculosLista', href: '/locadora/veiculosLista' },
   ],
-  pages: [],
+  pages: [
+    {
+      path: '/locadora/veiculosCadastro',
+      title: 'veiculosCadastro',
+      tagName: 'locadora--web--desktop--page11--veiculos-cadastro-102035',
+      loader: () => import('/_102035_/l2/locadora/web/desktop/page11/veiculosCadastro.js'),
+    },
+    {
+      path: '/locadora/veiculosLista',
+      title: 'veiculosLista',
+      tagName: 'locadora--web--desktop--page11--veiculos-lista-102035',
+      loader: () => import('/_102035_/l2/locadora/web/desktop/page11/veiculosLista.js'),
+    },
+  ],
 });
